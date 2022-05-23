@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SalonAPI.Models;
 
@@ -15,7 +16,7 @@ namespace SalonAPI.Controllers
             this.context = context;
         }
 
-        [HttpGet]
+        [HttpGet, Authorize(Roles = "Admin")]
         public async Task<ActionResult<List<SalonChain>>> Get()
         {
             return Ok(await context.SalonChains.ToListAsync());
