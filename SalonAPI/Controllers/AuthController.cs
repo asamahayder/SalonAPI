@@ -12,40 +12,66 @@ namespace SalonAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public static User user = new User();
         private readonly IConfiguration configuration;
+        private readonly DataContext context;
 
-        public AuthController(IConfiguration configuration)
+        public AuthController(IConfiguration configuration, DataContext context)
         {
             this.configuration = configuration;
+            this.context = context;
         }
 
 
-        [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(UserDTO userDTO)
+        [HttpPost("RegisterOwner")]
+        public async Task<ActionResult<User>> RegisterOwner(UserRegisterDTO userDTO)
         {
-            CreatePasswordHash(userDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
-            user.Username = userDTO.Username;
-            user.PasswordHash = passwordHash;
-            user.PasswordSalt = passwordSalt;
+            //model validation check
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-            return Ok(user);
+            //checking if a user with same email already exists
+            var dbUser = await context.Users.FirstOrDefaultAsync(x => x.Email == userDTO.Email);
+            if (dbUser != null) return BadRequest("A User with this email already exists.");
+
+            //creating and saving the new user
+            CreatePasswordHash(userDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            var newOwner = new Owner() { 
+                Email = userDTO.Email, 
+                FirstName = userDTO.FirstName.Trim(),
+                LastName = userDTO.LastName.Trim(),
+                Phone = userDTO.Phone,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt
+            };
+
+            context.Owners.Add(newOwner);
+            await context.SaveChangesAsync();
+
+            return Ok("User registered succesfully");
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserDTO userDTO)
+        public async Task<ActionResult<string>> Login(UserLoginDTO userDTO)
         {
-            if (userDTO.Username != user.Username)
+            //model validation check
+            if (!ModelState.IsValid)
             {
-                return BadRequest("User not found");
+                return BadRequest(ModelState);
             }
 
-            if (!VerifyPasswordHash(userDTO.Password, user.PasswordHash, user.PasswordSalt))
+            //checking if user with email exists
+            var dbUser = await context.Owners.FirstOrDefaultAsync(x => x.Email == userDTO.Email);
+            if (dbUser == null) return BadRequest("No User with this email exists.");
+            
+
+            if (!VerifyPasswordHash(userDTO.Password, dbUser.PasswordHash, dbUser.PasswordSalt))
             {
                 return BadRequest("Wrong password");
             }
 
-            var token = CreateToken(user);
+            var token = CreateToken(dbUser);
 
             return Ok(token);
         }
@@ -54,8 +80,9 @@ namespace SalonAPI.Controllers
         {
             List<Claim> claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, "test")
+                new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
+                new Claim(ClaimTypes.Role, "Owner"),
+                new Claim(ClaimTypes.Email, user.Email)
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(

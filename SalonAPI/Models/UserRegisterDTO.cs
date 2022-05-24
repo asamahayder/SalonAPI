@@ -1,14 +1,13 @@
-﻿
-
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SalonAPI.Models
 {
-    [Index(nameof(Email), IsUnique = true)]
-    public abstract class User
+    public class UserRegisterDTO
     {
+        
         [Required]
-        public int Id { get; set; }
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
 
         [Required]
         [MaxLength(50)]
@@ -19,12 +18,11 @@ namespace SalonAPI.Models
         public string LastName { get; set; } = string.Empty;
 
         [Required]
-        [EmailAddress]
-        public string Email { get; set; } = string.Empty;
-
-        [Required]
         [Phone]
         public string Phone { get; set; } = string.Empty;
-    }
 
+        [Required]
+        [MinLength(14)]
+        public string Password { get; set; } = string.Empty;
+    }
 }
