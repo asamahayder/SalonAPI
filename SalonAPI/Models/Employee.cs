@@ -9,11 +9,5 @@ namespace SalonAPI.Models
         public int? SalonId;
 
         public Salon? Salon { get; set; }
-
-        [Required]
-        public byte[] PasswordHash { get; set; }
-
-        [Required]
-        public byte[] PasswordSalt { get; set; }
     }
 }

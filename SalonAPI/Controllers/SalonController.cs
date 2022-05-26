@@ -47,17 +47,11 @@ namespace SalonAPI.Controllers
         [HttpPost("CreateSalon"), Authorize(Roles ="Admin,Owner")]
         public async Task<ActionResult<List<Salon>>> CreateSalon(SalonDTO salonDTO)
         {
-            //model validation check
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             //Getting user identity
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null) return Unauthorized("Identity is null");
             var ownerEmail = identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
-            var owner = await context.Owners.FirstOrDefaultAsync(x => x.Email == ownerEmail);
+            var owner = await context.Owners.AsNoTracking().FirstOrDefaultAsync(x => x.Email == ownerEmail);
 
             var salon = new Salon()
             {
@@ -78,15 +72,9 @@ namespace SalonAPI.Controllers
         }
 
         [HttpPut("UpdateSalon"), Authorize(Roles = "Admin,Owner")]
-        public async Task<ActionResult<Salon>> UpdateSalon(int Id, SalonDTO salonDTO)
+        public async Task<ActionResult<Salon>> UpdateSalon(SalonDTO salonDTO)
         {
-            //model validation check
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var dbSalon = await context.Salons.FindAsync(Id);
+            var dbSalon = await context.Salons.FindAsync(salonDTO.Id);
             if (dbSalon == null)
             {
                 return BadRequest("Salon not found");
@@ -96,7 +84,7 @@ namespace SalonAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null) return Unauthorized("Identity is null");
             var ownerEmail = identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
-            var owner = await context.Owners.FirstOrDefaultAsync(x => x.Email == ownerEmail);
+            var owner = await context.Owners.AsNoTracking().FirstOrDefaultAsync(x => x.Email == ownerEmail);
 
             if(dbSalon.OwnerId != owner.Id)
             {
@@ -130,7 +118,7 @@ namespace SalonAPI.Controllers
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null) return Unauthorized("Identity is null");
             var ownerEmail = identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
-            var owner = await context.Owners.FirstOrDefaultAsync(x => x.Email == ownerEmail);
+            var owner = await context.Owners.AsNoTracking().FirstOrDefaultAsync(x => x.Email == ownerEmail);
 
             if(owner.Id != dbSalon.OwnerId) return Unauthorized("Authorized user does not have permission to edit this salon.");
 

@@ -1,10 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SalonAPI.Models
+namespace SalonAPI.Models.DTOs
 {
     public class UserRegisterDTO
     {
-        
+
         [Required]
         [EmailAddress]
         public string Email { get; set; } = string.Empty;

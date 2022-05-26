@@ -25,6 +25,15 @@ namespace SalonAPI.Models
         [Required]
         [Phone]
         public string Phone { get; set; } = string.Empty;
+
+        [Required]
+        public string Role { get; private set; }
+
+        [Required]
+        public byte[] PasswordHash { get; set; }
+
+        [Required]
+        public byte[] PasswordSalt { get; set; }
     }
 
 }

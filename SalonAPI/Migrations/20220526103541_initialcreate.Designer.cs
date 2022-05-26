@@ -12,7 +12,7 @@ using SalonAPI.Data;
 namespace SalonAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220524162608_initialcreate")]
+    [Migration("20220526103541_initialcreate")]
     partial class initialcreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -93,6 +93,14 @@ namespace SalonAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -115,31 +123,12 @@ namespace SalonAPI.Migrations
                 {
                     b.HasBaseType("SalonAPI.Models.User");
 
-                    b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("varbinary(max)")
-                        .HasColumnName("PasswordHash");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("varbinary(max)")
-                        .HasColumnName("PasswordSalt");
-
                     b.HasDiscriminator().HasValue("Admin");
                 });
 
             modelBuilder.Entity("SalonAPI.Models.Customer", b =>
                 {
                     b.HasBaseType("SalonAPI.Models.User");
-
-                    b.Property<int?>("SalonId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("int")
-                        .HasColumnName("SalonId");
-
-                    b.HasIndex("SalonId");
 
                     b.HasDiscriminator().HasValue("Customer");
                 });
@@ -148,22 +137,8 @@ namespace SalonAPI.Migrations
                 {
                     b.HasBaseType("SalonAPI.Models.User");
 
-                    b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("varbinary(max)")
-                        .HasColumnName("PasswordHash");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("varbinary(max)")
-                        .HasColumnName("PasswordSalt");
-
                     b.Property<int?>("SalonId")
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("int")
-                        .HasColumnName("SalonId");
+                        .HasColumnType("int");
 
                     b.HasIndex("SalonId");
 
@@ -174,19 +149,7 @@ namespace SalonAPI.Migrations
                 {
                     b.HasBaseType("SalonAPI.Models.User");
 
-                    b.Property<byte[]>("PasswordHash")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("varbinary(max)")
-                        .HasColumnName("PasswordHash");
-
-                    b.Property<byte[]>("PasswordSalt")
-                        .IsRequired()
-                        .ValueGeneratedOnUpdateSometimes()
-                        .HasColumnType("varbinary(max)")
-                        .HasColumnName("PasswordSalt");
-
-                    b.Property<string>("SalonName")
+                    b.Property<string>("SalonChainName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -203,15 +166,6 @@ namespace SalonAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
-                });
-
-            modelBuilder.Entity("SalonAPI.Models.Customer", b =>
-                {
-                    b.HasOne("SalonAPI.Models.Salon", "Salon")
-                        .WithMany()
-                        .HasForeignKey("SalonId");
-
-                    b.Navigation("Salon");
                 });
 
             modelBuilder.Entity("SalonAPI.Models.Employee", b =>

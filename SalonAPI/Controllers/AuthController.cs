@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using SalonAPI.Models;
+using SalonAPI.Models.DTOs;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -21,16 +22,9 @@ namespace SalonAPI.Controllers
             this.context = context;
         }
 
-
         [HttpPost("RegisterOwner")]
         public async Task<ActionResult<User>> RegisterOwner(UserRegisterDTO userDTO)
         {
-            //model validation check
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             //checking if a user with same email already exists
             var dbUser = await context.Users.FirstOrDefaultAsync(x => x.Email == userDTO.Email);
             if (dbUser != null) return BadRequest("A User with this email already exists.");
@@ -52,17 +46,61 @@ namespace SalonAPI.Controllers
             return Ok("User registered succesfully");
         }
 
+        [HttpPost("RegisterEmployee")]
+        public async Task<ActionResult<User>> RegisterEmployee(UserRegisterDTO userDTO)
+        {
+            //checking if a user with same email already exists
+            var dbUser = await context.Users.FirstOrDefaultAsync(x => x.Email == userDTO.Email);
+            if (dbUser != null) return BadRequest("A User with this email already exists.");
+
+            //creating and saving the new user
+            CreatePasswordHash(userDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            var newEmployee = new Employee()
+            {
+                Email = userDTO.Email,
+                FirstName = userDTO.FirstName.Trim(),
+                LastName = userDTO.LastName.Trim(),
+                Phone = userDTO.Phone,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt
+            };
+
+            context.Employees.Add(newEmployee);
+            await context.SaveChangesAsync();
+
+            return Ok("User registered succesfully");
+        }
+
+        [HttpPost("RegisterCustomer")]
+        public async Task<ActionResult<User>> RegisterCustomer(UserRegisterDTO userDTO)
+        {
+            //checking if a user with same email already exists
+            var dbUser = await context.Users.FirstOrDefaultAsync(x => x.Email == userDTO.Email);
+            if (dbUser != null) return BadRequest("A User with this email already exists.");
+
+            //creating and saving the new user
+            CreatePasswordHash(userDTO.Password, out byte[] passwordHash, out byte[] passwordSalt);
+            var newCustomer = new Customer()
+            {
+                Email = userDTO.Email,
+                FirstName = userDTO.FirstName.Trim(),
+                LastName = userDTO.LastName.Trim(),
+                Phone = userDTO.Phone,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt
+            };
+
+            context.Customers.Add(newCustomer);
+            await context.SaveChangesAsync();
+
+            return Ok("User registered succesfully");
+        }
+
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserLoginDTO userDTO)
         {
-            //model validation check
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             //checking if user with email exists
-            var dbUser = await context.Owners.FirstOrDefaultAsync(x => x.Email == userDTO.Email);
+            var dbUser = await context.Users.FirstOrDefaultAsync(x => x.Email == userDTO.Email);
             if (dbUser == null) return BadRequest("No User with this email exists.");
             
 
@@ -81,7 +119,7 @@ namespace SalonAPI.Controllers
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
-                new Claim(ClaimTypes.Role, "Owner"),
+                new Claim(ClaimTypes.Role, user.Role),
                 new Claim(ClaimTypes.Email, user.Email)
             };
 
@@ -121,5 +159,7 @@ namespace SalonAPI.Controllers
 
             }
         }
+
+        
     }
 }

@@ -5,6 +5,9 @@ namespace SalonAPI.Models.DTOs
     public class SalonDTO
     {
         [Required]
+        public int Id { get; set; }
+
+        [Required]
         public string City { get; set; } = string.Empty;
 
         [Required]

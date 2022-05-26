@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SalonAPI.Data;
 
@@ -11,9 +12,10 @@ using SalonAPI.Data;
 namespace SalonAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220526110906_initialcreate3")]
+    partial class initialcreate3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,45 +69,6 @@ namespace SalonAPI.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("Salons");
-                });
-
-            modelBuilder.Entity("SalonAPI.Models.Service", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<int>("DurationInMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("PauseEndInMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PauseStartInMinutes")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
-
-                    b.Property<int>("SalonId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SalonId");
-
-                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("SalonAPI.Models.User", b =>
@@ -203,17 +166,6 @@ namespace SalonAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Owner");
-                });
-
-            modelBuilder.Entity("SalonAPI.Models.Service", b =>
-                {
-                    b.HasOne("SalonAPI.Models.Salon", "Salon")
-                        .WithMany()
-                        .HasForeignKey("SalonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Salon");
                 });
 
             modelBuilder.Entity("SalonAPI.Models.Employee", b =>

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SalonAPI.Models
+namespace SalonAPI.Models.DTOs
 {
     public class UserLoginDTO
     {

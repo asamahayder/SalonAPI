@@ -5,9 +5,6 @@ namespace SalonAPI.Models
 {
     public class Customer : User
     {
-        [ForeignKey("Salon")]
-        public int? SalonId;
-
-        public Salon? Salon { get; set; }
+        
     }
 }
