@@ -4,7 +4,7 @@
 
 namespace SalonAPI.Migrations
 {
-    public partial class initialcreate2 : Migration
+    public partial class initialcreate4 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

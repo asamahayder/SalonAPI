@@ -38,5 +38,7 @@ namespace SalonAPI.Models
         [EmailAddress]
         public string? Email { get; set; } = string.Empty;
 
+        public List<Employee> Employees { get; set; }
+
     }
 }

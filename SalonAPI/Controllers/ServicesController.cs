@@ -18,18 +18,31 @@ namespace SalonAPI.Controllers
             this.context = context;
         }
 
+        //TODO when getting a service, include the employees that it has assigned. But when updating/creating a service, do NOT include employees.
 
-        [HttpGet]
-        public async Task<ActionResult<List<Service>>> Get()
+        [HttpGet("ServicesBySalon")]
+        public async Task<ActionResult<List<ServiceDTO>>> GetServicesBySalon(int salonId)
         {
-            return Ok(await context.Services.ToListAsync());
+            var services = await context.Services.Include(x => x.Employees).Where(x => x.SalonId == salonId)
+                .Select(x => Mapper.MapToDTO(x)).ToListAsync();
+            return Ok(services);
+        }
+
+        [HttpGet("ServicesByEmployee")]
+        public async Task<ActionResult<List<ServiceDTO>>> GetServicesByEmployee(int employeeId)
+        {
+            //return Ok(await context.Employees.Where(x => x.Id == employeeId).SelectMany(x => x.Services).ToListAsync());
+
+            var services = await context.Employees.Where(x => x.Id == employeeId)
+                .SelectMany(x => x.Services).Include(x => x.Employees).Select(x => Mapper.MapToDTO(x)).ToListAsync();
+            return Ok(services);
         }
 
 
         [HttpGet("id")]
-        public async Task<ActionResult<Service>> Get(int Id)
+        public async Task<ActionResult<ServiceDTO>> Get(int Id)
         {
-            var service = await context.Services.FindAsync(Id);
+            var service = await context.Services.Include(x => x.Employees).Where(x => x.Id == Id).Select(x => Mapper.MapToDTO(x)).FirstOrDefaultAsync();
             if (service == null)
             {
                 return BadRequest("Service not found");
@@ -40,7 +53,7 @@ namespace SalonAPI.Controllers
 
 
         [HttpPost("CreateService"), Authorize(Roles = "Admin,Owner")]
-        public async Task<ActionResult<List<Service>>> CreateService(ServiceDTO serviceDTO)
+        public async Task<ActionResult<List<ServiceDTO>>> CreateService(ServiceDTO serviceDTO)
         {
             //Getting user identity
             var identity = HttpContext.User.Identity as ClaimsIdentity;
@@ -53,6 +66,15 @@ namespace SalonAPI.Controllers
             if (salon == null) return BadRequest("Salon was not found");
             if (salon.OwnerId != owner.Id) return Unauthorized("Logged in user does not have permission to create a service for this salon.");
 
+            var serviceDtoEmployees = await context.Employees.Where(x => serviceDTO.EmployeesIds.Contains(x.Id)).ToListAsync();
+
+            foreach (var serviceDtoEmployee in serviceDtoEmployees)
+            {
+                var employeeSalonId = serviceDtoEmployee.SalonId;
+
+                if (employeeSalonId == null || employeeSalonId != salon.Id)
+                    return Unauthorized("Employee not part of salon");
+            }
 
             var service = new Service()
             {
@@ -62,20 +84,23 @@ namespace SalonAPI.Controllers
                 Price = serviceDTO.Price,
                 DurationInMinutes = serviceDTO.DurationInMinutes,
                 PauseStartInMinutes = serviceDTO.PauseStartInMinutes,
-                PauseEndInMinutes = serviceDTO.PauseEndInMinutes
+                PauseEndInMinutes = serviceDTO.PauseEndInMinutes,
+                Employees = serviceDtoEmployees
             };
 
             context.Services.Add(service);
             await context.SaveChangesAsync();
 
-            return Ok(await context.Services.ToListAsync());
+            var dtos = await context.Services.Include(x => x.Employees).Where(x => x.SalonId == salon.Id)
+                .Select(x => Mapper.MapToDTO(x)).ToListAsync();
+            return Ok(dtos);
         }
 
 
         [HttpPut("UpdateService"), Authorize(Roles = "Admin,Owner")]
-        public async Task<ActionResult<Service>> UpdateService(ServiceDTO serviceDTO)
+        public async Task<ActionResult<ServiceDTO>> UpdateService(ServiceDTO serviceDTO)
         {
-            var dbService = await context.Services.FindAsync(serviceDTO.Id);
+            var dbService = await context.Services.Include(x => x.Employees).FirstOrDefaultAsync(x => x.Id == serviceDTO.Id);
             if (dbService == null)
             {
                 return BadRequest("Service not found");
@@ -90,6 +115,16 @@ namespace SalonAPI.Controllers
             if (salon == null) return BadRequest("Salon was not found");
             if (salon.OwnerId != owner.Id) return Unauthorized("Logged in user does not have permission to edit a service for this salon.");
 
+            var serviceDtoEmployees = await context.Employees.Where(x => serviceDTO.EmployeesIds.Contains(x.Id)).ToListAsync();
+
+            foreach (var serviceDtoEmployee in serviceDtoEmployees)
+            {
+                var employeeSalonId = serviceDtoEmployee.SalonId;
+
+                if (employeeSalonId == null || employeeSalonId != salon.Id)
+                    return Unauthorized("Employee not part of salon");
+            }
+
             //Updating
             dbService.Name = serviceDTO.Name;
             dbService.Description = serviceDTO.Description;
@@ -97,14 +132,19 @@ namespace SalonAPI.Controllers
             dbService.DurationInMinutes = serviceDTO.DurationInMinutes;
             dbService.PauseStartInMinutes = serviceDTO.PauseStartInMinutes;
             dbService.PauseEndInMinutes = serviceDTO.PauseEndInMinutes;
+            dbService.Employees = serviceDtoEmployees;
 
             await context.SaveChangesAsync();
-            return Ok(await context.Services.ToListAsync());
+
+            var dtos = await context.Services.Include(x => x.Employees).Where(x => x.SalonId == salon.Id)
+                .Select(x => Mapper.MapToDTO(x)).ToListAsync();
+
+            return Ok(dtos);
         }
 
 
         [HttpDelete("DeleteService"), Authorize(Roles = "Admin,Owner")]
-        public async Task<ActionResult<List<Service>>> Delete(int Id)
+        public async Task<ActionResult<List<ServiceDTO>>> Delete(int Id)
         {
             var dbService = await context.Services.FindAsync(Id);
             if (dbService == null)
@@ -123,7 +163,10 @@ namespace SalonAPI.Controllers
 
             context.Services.Remove(dbService);
             await context.SaveChangesAsync();
-            return Ok(await context.Services.ToListAsync());
+            
+            var dtos = await context.Services.Include(x => x.Employees).Where(x => x.SalonId == salon.Id)
+                .Select(x => Mapper.MapToDTO(x)).ToListAsync();
+            return Ok(dtos);
         }
     }
 }

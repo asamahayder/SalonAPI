@@ -12,12 +12,14 @@ namespace SalonAPI.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<User>()
-                .HasDiscriminator<string>("Role")
-                .HasValue<Admin>("Admin")
-                .HasValue<Owner>("Owner")
-                .HasValue<Employee>("Employee")
-                .HasValue<Customer>("Customer");
+            //modelBuilder.Entity<User>()
+            //    .HasDiscriminator<string>("Role")
+            //    .HasValue<Admin>("Admin")
+            //    .HasValue<Owner>("Owner")
+            //    .HasValue<Employee>("Employee")
+            //    .HasValue<Customer>("Customer");
+
+
         }
 
         public DbSet<User> Users { get; set; }
@@ -28,6 +30,8 @@ namespace SalonAPI.Data
         public DbSet<Salon> Salons { get; set; }
 
         public DbSet<Service> Services { get; set; }
+
+        public DbSet<Booking> Bookings { get; set; }
 
 
     }

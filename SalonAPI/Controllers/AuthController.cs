@@ -37,7 +37,8 @@ namespace SalonAPI.Controllers
                 LastName = userDTO.LastName.Trim(),
                 Phone = userDTO.Phone,
                 PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt
+                PasswordSalt = passwordSalt,
+                Role = Roles.Owner
             };
 
             context.Owners.Add(newOwner);
@@ -62,7 +63,8 @@ namespace SalonAPI.Controllers
                 LastName = userDTO.LastName.Trim(),
                 Phone = userDTO.Phone,
                 PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt
+                PasswordSalt = passwordSalt,
+                Role = Roles.Employee
             };
 
             context.Employees.Add(newEmployee);
@@ -87,7 +89,8 @@ namespace SalonAPI.Controllers
                 LastName = userDTO.LastName.Trim(),
                 Phone = userDTO.Phone,
                 PasswordHash = passwordHash,
-                PasswordSalt = passwordSalt
+                PasswordSalt = passwordSalt,
+                Role = Roles.Customer
             };
 
             context.Customers.Add(newCustomer);
@@ -119,8 +122,9 @@ namespace SalonAPI.Controllers
             List<Claim> claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, user.FirstName + " " + user.LastName),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Role, user.Role.GetString()),   
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             };
 
             var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(

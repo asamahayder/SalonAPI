@@ -27,13 +27,36 @@ namespace SalonAPI.Models
         public string Phone { get; set; } = string.Empty;
 
         [Required]
-        public string Role { get; private set; }
+        public Roles Role { get; set; }
 
         [Required]
         public byte[] PasswordHash { get; set; }
 
         [Required]
         public byte[] PasswordSalt { get; set; }
+    }
+
+    public enum Roles
+    {
+        Admin,
+        Owner,
+        Employee,
+        Customer
+    }
+
+    public static class RolesExtention
+    {
+        public static string GetString(this Roles role)
+        {
+            switch (role)
+            {
+                case Roles.Admin: return "Admin";
+                case Roles.Owner: return "Owner";
+                case Roles.Employee: return "Employee";
+                case Roles.Customer: return "Customer";
+                default: return "Admin";
+            }
+        }
     }
 
 }

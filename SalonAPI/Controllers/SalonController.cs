@@ -25,27 +25,28 @@ namespace SalonAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<Salon>>> Get()
+        public async Task<ActionResult<List<SalonDTO>>> Get()
         {
-            return Ok(await context.Salons.ToListAsync());
+            var salons = await context.Salons.Include(x => x.Employees).Select(x => Mapper.MapToDTO(x)).ToListAsync();
+            return Ok(salons);
         }
 
         [HttpGet("id")]
-        public async Task<ActionResult<Salon>> Get(int Id)
+        public async Task<ActionResult<SalonDTO>> Get(int Id)
         {
-            var salon = await context.Salons.FindAsync(Id);
+            var salon = await context.Salons.Include(x => x.Employees).Where(x => x.Id == Id)
+                .Select(x => Mapper.MapToDTO(x)).FirstOrDefaultAsync();
+            
             if (salon == null)
             {
                 return BadRequest("Salon not found");
             }
             
             return Ok(salon);
-            
-
         }
 
         [HttpPost("CreateSalon"), Authorize(Roles ="Admin,Owner")]
-        public async Task<ActionResult<List<Salon>>> CreateSalon(SalonDTO salonDTO)
+        public async Task<ActionResult<List<SalonDTO>>> CreateSalon(SalonDTO salonDTO)
         {
             //Getting user identity
             var identity = HttpContext.User.Identity as ClaimsIdentity;
@@ -65,14 +66,17 @@ namespace SalonAPI.Controllers
                 Phone = salonDTO.Phone,
                 Email = salonDTO.Email
             };
+
             context.Salons.Add(salon);
             await context.SaveChangesAsync();
 
-            return Ok(await context.Salons.ToListAsync());
+            var salons = await context.Salons.Include(x => x.Employees).Where(x => x.OwnerId == owner.Id)
+               .Select(x => Mapper.MapToDTO(x)).ToListAsync();
+            return Ok(salons);
         }
 
         [HttpPut("UpdateSalon"), Authorize(Roles = "Admin,Owner")]
-        public async Task<ActionResult<Salon>> UpdateSalon(SalonDTO salonDTO)
+        public async Task<ActionResult<SalonDTO>> UpdateSalon(SalonDTO salonDTO)
         {
             var dbSalon = await context.Salons.FindAsync(salonDTO.Id);
             if (dbSalon == null)
@@ -102,11 +106,14 @@ namespace SalonAPI.Controllers
             dbSalon.Email = salonDTO.Email;
 
             await context.SaveChangesAsync();
-            return Ok(await context.Salons.ToListAsync());
+
+            var salons = await context.Salons.Include(x => x.Employees).Where(x => x.OwnerId == owner.Id)
+               .Select(x => Mapper.MapToDTO(x)).ToListAsync();
+            return Ok(salons);
         }
 
         [HttpDelete("DeleteSalon"), Authorize(Roles = "Admin,Owner")]
-        public async Task<ActionResult<List<Salon>>> Delete(int Id)
+        public async Task<ActionResult<List<SalonDTO>>> Delete(int Id)
         {
             var dbSalon = await context.Salons.FindAsync(Id);
             if (dbSalon == null)
@@ -124,8 +131,11 @@ namespace SalonAPI.Controllers
 
             context.Salons.Remove(dbSalon);
             await context.SaveChangesAsync();
-            return Ok(await context.Salons.ToListAsync());
-            
+
+            var salons = await context.Salons.Include(x => x.Employees).Where(x => x.OwnerId == owner.Id)
+               .Select(x => Mapper.MapToDTO(x)).ToListAsync();
+            return Ok(salons);
+
 
         }
     }
