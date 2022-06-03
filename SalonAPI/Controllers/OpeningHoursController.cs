@@ -129,7 +129,7 @@ namespace SalonAPI.Controllers
         }
 
 
-        [HttpPost("UpdateSpecialOpeningHours"), Authorize(Roles = "Admin,Employee")]
+        [HttpPut("UpdateSpecialOpeningHours"), Authorize(Roles = "Admin,Employee")]
         public async Task<ActionResult<List<SpecialOpeningHoursDTO>>> UpdateSpecialOpeningHours(SpecialOpeningHoursDTO specialOpeningHoursDTO)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
@@ -179,7 +179,7 @@ namespace SalonAPI.Controllers
 
         }
 
-        [HttpPost("UpdateOpeningHours"), Authorize(Roles = "Admin,Employee")]
+        [HttpPut("UpdateOpeningHours"), Authorize(Roles = "Admin,Employee")]
         public async Task<ActionResult<OpeningHoursDTO>> UpdateOpeningHours(OpeningHoursDTO openingHoursDTO)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;

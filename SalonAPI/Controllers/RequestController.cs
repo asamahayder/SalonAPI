@@ -102,7 +102,7 @@ namespace SalonAPI.Controllers
             return Ok(requests);
         }
 
-        [HttpGet("ApproveRequest")]
+        [HttpPut("ApproveRequest")]
         [Authorize(Roles = "Admin,Owner")]
         public async Task<ActionResult<List<RequestDTO>>> ApproveRequest(int requestID)
         {
@@ -134,7 +134,7 @@ namespace SalonAPI.Controllers
             return Ok(requests);
         }
 
-        [HttpGet("DenyRequest")]
+        [HttpPut("DenyRequest")]
         [Authorize(Roles = "Admin,Owner")]
         public async Task<ActionResult<List<RequestDTO>>> DenyRequest(int requestID)
         {

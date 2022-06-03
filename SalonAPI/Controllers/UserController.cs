@@ -73,8 +73,8 @@ namespace SalonAPI.Controllers
             return Ok(Mapper.MapToDTO(user));
         }
 
-        [HttpPut("EditUser")]
-        public async Task<ActionResult<UserDTO>> EditUser(UserDTO userDTO)
+        [HttpPut("UpdateUser")]
+        public async Task<ActionResult<UserDTO>> UpdateUser(UserDTO userDTO)
         {
             var identity = HttpContext.User.Identity as ClaimsIdentity;
             if (identity == null) return Unauthorized("Identity is null");

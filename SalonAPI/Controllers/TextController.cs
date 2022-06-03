@@ -61,9 +61,9 @@ namespace SalonAPI.Controllers
             return Ok(Mapper.MapToDTO(newText));
         }
 
-        [HttpPost("EditText")]
+        [HttpPut("UpdateText")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<TextDTO>> EditText(TextDTO textDTO)
+        public async Task<ActionResult<TextDTO>> UpdateText(TextDTO textDTO)
         {
             var dbText = await context.Text.FirstOrDefaultAsync(x => x.Key == textDTO.Key);
 

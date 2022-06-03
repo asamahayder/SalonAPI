@@ -184,8 +184,8 @@ namespace SalonAPI.Controllers
         }
 
 
-        [HttpPost("EditBooking")]
-        public async Task<ActionResult<List<BookingDTO>>> EditBooking(BookingDTO bookingDTO)
+        [HttpPut("UpdateBooking")]
+        public async Task<ActionResult<List<BookingDTO>>> UpdateBooking(BookingDTO bookingDTO)
         {
             //Getting user identity
             var identity = HttpContext.User.Identity as ClaimsIdentity;
