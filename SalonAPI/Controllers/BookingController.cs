@@ -158,7 +158,7 @@ namespace SalonAPI.Controllers
             if (bookingDTO.StartTime.CompareTo(endTimeForDay) >= 0 || bookingDTO.EndTime.CompareTo(endTimeForDay) > 0)
                 return BadRequest("Booking start/end time cant be outside the end of the day");
 
-            IsValid(bookingDTO, service, employee, out bool isValid, out string? error);
+            IsValid(bookingDTO.StartTime, employee.Id, service, out bool isValid, out string? error);
 
             if (!isValid) return BadRequest(error);
 
@@ -260,7 +260,7 @@ namespace SalonAPI.Controllers
             if (bookingDTO.StartTime.CompareTo(endTimeForDay) >= 0 || bookingDTO.EndTime.CompareTo(endTimeForDay) > 0)
                 return BadRequest("Booking start/end time cant be outside the end of the day");
 
-            IsValid(bookingDTO, service, employee, out bool isValid, out string? error);
+            IsValid(bookingDTO.StartTime, employee.Id, service, out bool isValid, out string? error);
 
             if (!isValid) return BadRequest(error);
 
@@ -353,20 +353,22 @@ namespace SalonAPI.Controllers
 
                     var bookingDTOBeforePause = new BookingDTO()
                     {
-                        BookedById = bookingDTO.Id,
+                        BookedById = user.Id,
                         EmployeeId = bookingDTO.EmployeeId,
                         ServiceId = bookingDTO.ServiceId,
                         StartTime = bookingDTO.StartTime,
-                        EndTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.PauseStartInMinutes))
+                        EndTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.PauseStartInMinutes)),
+                        Note = bookingDTO.Note
                     };
 
                     var bookingDTOAfterPause = new BookingDTO()
                     {
-                        BookedById = bookingDTO.Id,
+                        BookedById = user.Id,
                         EmployeeId = bookingDTO.EmployeeId,
                         ServiceId = bookingDTO.ServiceId,
                         StartTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.PauseEndInMinutes)),
-                        EndTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.DurationInMinutes))
+                        EndTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.DurationInMinutes)),
+                        Note = bookingDTO.Note
                     };
 
                     IsOverlapping(bookingDTOBeforePause.StartTime, bookingDTOBeforePause.EndTime, dbBookings, out isOverlapping);
@@ -463,7 +465,7 @@ namespace SalonAPI.Controllers
             return hasPermission;
         }
 
-        private void IsValid(BookingDTO booking, Service service, Employee employee, out bool isValid, out string error)
+        private void IsValid(DateTime startTime, int employeeId, Service service, out bool isValid, out string error)
         {
             isValid = true;
             error = "";
@@ -473,7 +475,7 @@ namespace SalonAPI.Controllers
             var serviceHasEmployee = false;
             foreach (var serviceEmployee in service.Employees)
             {
-                if (serviceEmployee.Id == booking.EmployeeId) serviceHasEmployee = true; break;
+                if (serviceEmployee.Id == employeeId) serviceHasEmployee = true; break;
             }
 
             if (!serviceHasEmployee) { isValid = false; error = "Service does not have employee"; return; }
@@ -481,7 +483,7 @@ namespace SalonAPI.Controllers
 
 
             //Checking if date is not in the past
-            if (DateTime.Compare(booking.StartTime, DateTime.Now) < 0) { isValid = false; error = "Datetime cannot be in the past"; return; }
+            if (DateTime.Compare(startTime, DateTime.Now) < 0) { isValid = false; error = "Datetime cannot be in the past"; return; }
            
         }
 
