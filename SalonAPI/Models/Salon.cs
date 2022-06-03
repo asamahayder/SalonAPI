@@ -24,11 +24,14 @@ namespace SalonAPI.Models
         [Required]
         public string StreetName { get; set; } = string.Empty;
 
+        [MaxLength(10)]
         [Required]
         public string StreetNumber { get; set; } = string.Empty;
 
+        [MaxLength(10)]
         public string? Suit { get; set; } = string.Empty;
 
+        [MaxLength(10)]
         public string? Door { get; set; } = string.Empty;
 
         [Required]

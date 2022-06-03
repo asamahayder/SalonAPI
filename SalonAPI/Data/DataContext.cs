@@ -23,15 +23,28 @@ namespace SalonAPI.Data
         }
 
         public DbSet<User> Users { get; set; }
+
         public DbSet<Admin> Admins{ get; set; }
+
         public DbSet<Owner> Owners{ get; set; }
+
         public DbSet<Employee> Employees{ get; set; }
+
         public DbSet<Customer> Customers{ get; set; }
+
         public DbSet<Salon> Salons { get; set; }
 
         public DbSet<Service> Services { get; set; }
 
         public DbSet<Booking> Bookings { get; set; }
+
+        public DbSet<Request> Requests { get; set; }
+
+        public DbSet<OpeningHours> OpeningHours { get; set; }
+
+        public DbSet<SpecialOpeningHours> SpecialOpeningHours{ get; set; }
+
+        public DbSet<Text> Text { get; set; }
 
 
     }

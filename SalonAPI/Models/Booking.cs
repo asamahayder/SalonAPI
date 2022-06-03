@@ -13,6 +13,7 @@ namespace SalonAPI.Models
         public int BookedById { get; set; }
 
         public User User { get; set; }
+        
 
         [Required]
         [ForeignKey("Employee")]
@@ -33,6 +34,9 @@ namespace SalonAPI.Models
         [Required]
         [DataType(DataType.DateTime)]
         public DateTime EndTime { get; set; }
+
+        [MaxLength(300)]
+        public string? Note { get; set; }
 
 
     }

@@ -20,8 +20,10 @@ namespace SalonAPI.Models.DTOs
         [Required]
         public string StreetNumber { get; set; } = string.Empty;
 
+        [MaxLength(10)]
         public string? Suit { get; set; } = string.Empty;
 
+        [MaxLength(10)]
         public string? Door { get; set; } = string.Empty;
 
         [Required]

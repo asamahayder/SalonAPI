@@ -68,6 +68,17 @@ namespace SalonAPI.Controllers
             };
 
             context.Employees.Add(newEmployee);
+
+            
+            await context.SaveChangesAsync();
+
+            var newOpeningHours = new OpeningHours()
+            {
+                EmployeeId = newEmployee.Id,
+                Employee = newEmployee
+            };
+
+            context.OpeningHours.Add(newOpeningHours);
             await context.SaveChangesAsync();
 
             return Ok("User registered succesfully");

@@ -11,6 +11,7 @@ namespace SalonAPI.Models.DTOs
         [Required]
         public int BookedById { get; set; }
 
+
         [Required]
         public int EmployeeId { get; set; }
 
@@ -26,6 +27,9 @@ namespace SalonAPI.Models.DTOs
         [Required]
         [DataType(DataType.DateTime)]
         public DateTime EndTime { get; set; }
+
+        [MaxLength(300)]
+        public string? Note { get; set; }
 
     }
 }

@@ -12,8 +12,8 @@ using SalonAPI.Data;
 namespace SalonAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220529130253_addedBookings")]
-    partial class addedBookings
+    [Migration("20220603101520_initialcreate")]
+    partial class initialcreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,14 +50,21 @@ namespace SalonAPI.Migrations
                     b.Property<int>("BookedById")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -68,6 +75,116 @@ namespace SalonAPI.Migrations
                     b.HasIndex("ServiceId");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("SalonAPI.Models.OpeningHours", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FridayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("FridayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("FridayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("MondayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("MondayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("MondayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("SaturdayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("SaturdayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SaturdayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("SundayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("SundayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SundayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ThursdayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("ThursdayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ThursdayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TuesdayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("TuesdayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("TuesdayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("WednessdayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("WednessdayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("WednessdayStart")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("OpeningHours");
+                });
+
+            modelBuilder.Entity("SalonAPI.Models.Request", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RequestStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SalonId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("SalonId");
+
+                    b.ToTable("Requests");
                 });
 
             modelBuilder.Entity("SalonAPI.Models.Salon", b =>
@@ -83,7 +200,8 @@ namespace SalonAPI.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Door")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -105,10 +223,12 @@ namespace SalonAPI.Migrations
 
                     b.Property<string>("StreetNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Suit")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
 
@@ -154,6 +274,90 @@ namespace SalonAPI.Migrations
                     b.HasIndex("SalonId");
 
                     b.ToTable("Services");
+                });
+
+            modelBuilder.Entity("SalonAPI.Models.SpecialOpeningHours", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FridayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("FridayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("FridayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("MondayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("MondayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("MondayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("SaturdayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("SaturdayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SaturdayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("SundayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("SundayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("SundayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ThursdayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("ThursdayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("ThursdayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("TuesdayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("TuesdayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("TuesdayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("WednessdayEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("WednessdayOpen")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("WednessdayStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("Week")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("SpecialOpeningHours");
                 });
 
             modelBuilder.Entity("SalonAPI.Models.User", b =>
@@ -281,6 +485,36 @@ namespace SalonAPI.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SalonAPI.Models.OpeningHours", b =>
+                {
+                    b.HasOne("SalonAPI.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SalonAPI.Models.Request", b =>
+                {
+                    b.HasOne("SalonAPI.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SalonAPI.Models.Salon", "Salon")
+                        .WithMany()
+                        .HasForeignKey("SalonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Salon");
+                });
+
             modelBuilder.Entity("SalonAPI.Models.Salon", b =>
                 {
                     b.HasOne("SalonAPI.Models.Owner", "Owner")
@@ -301,6 +535,17 @@ namespace SalonAPI.Migrations
                         .IsRequired();
 
                     b.Navigation("Salon");
+                });
+
+            modelBuilder.Entity("SalonAPI.Models.SpecialOpeningHours", b =>
+                {
+                    b.HasOne("SalonAPI.Models.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("SalonAPI.Models.Admin", b =>
