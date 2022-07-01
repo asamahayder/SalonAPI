@@ -23,6 +23,9 @@ namespace SalonAPI.Models.DTOs
         [Required]
         [Phone]
         public string Phone { get; set; } = string.Empty;
-        
+
+
+        [Required]
+        public string Role { get; set; } = string.Empty;
     }
 }

@@ -20,8 +20,8 @@ namespace SalonAPI.Controllers
 
         }
 
-        [HttpGet("GetUser"), Authorize(Roles = "Admin,Customer")]
-        public async Task<ActionResult<UserDTO>> GetUser(int userID)
+        [HttpGet("GetUser")]
+        public async Task<ActionResult<UserDTO>> GetUser()
         {
             //user can only get his own information
             var identity = HttpContext.User.Identity as ClaimsIdentity;
@@ -32,11 +32,18 @@ namespace SalonAPI.Controllers
 
             if (currentUser == null) return NotFound("User not found");
 
-            if(currentUser.Role != Models.Roles.Admin && currentUserId != userID) 
-                return Unauthorized("Can't get another users profile");
-
-            
             return Ok(Mapper.MapToDTO(currentUser));
+        }
+
+        [HttpGet("GetUserById"), Authorize(Roles = "Admin")]
+        public async Task<ActionResult<UserDTO>> GetUserById(int id)
+        {
+            
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (user == null) return NotFound("User not found");
+
+            return Ok(Mapper.MapToDTO(user));
         }
 
         [HttpGet("GetUserByBookingId"), Authorize(Roles = "Admin,Owner,Employee")]

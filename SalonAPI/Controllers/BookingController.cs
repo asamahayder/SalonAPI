@@ -20,7 +20,6 @@ namespace SalonAPI.Controllers
         public BookingController(DataContext context)
         {
             this.context = context;
-
         }
 
         [HttpGet("BookingsByEmployee")]

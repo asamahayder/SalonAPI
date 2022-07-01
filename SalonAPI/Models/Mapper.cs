@@ -34,6 +34,7 @@ namespace SalonAPI.Models
             SalonDTO salonDTO = new SalonDTO()
             {
                 Id = salon.Id,
+                Name = salon.Name,
                 City = salon.City,
                 PostCode = salon.PostCode,
                 StreetName = salon.StreetName,
@@ -179,7 +180,8 @@ namespace SalonAPI.Models
                 Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Phone = user.Phone
+                Phone = user.Phone,
+                Role = user.Role.GetString()
             };
 
             return userDTO;

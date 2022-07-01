@@ -45,6 +45,15 @@ namespace SalonAPI.Controllers
             return Ok(salon);
         }
 
+        [HttpGet("GetByOwnerId")]
+        public async Task<ActionResult<List<SalonDTO>>> GetByOwnerId(int OwnerId)
+        {
+            var salons = await context.Salons.Include(x => x.Employees).Where(x => x.OwnerId == OwnerId)
+                .Select(x => Mapper.MapToDTO(x)).ToListAsync();
+
+            return Ok(salons);
+        }
+
         [HttpPost("CreateSalon"), Authorize(Roles ="Admin,Owner")]
         public async Task<ActionResult<List<SalonDTO>>> CreateSalon(SalonDTO salonDTO)
         {
@@ -57,6 +66,7 @@ namespace SalonAPI.Controllers
             var salon = new Salon()
             {
                 OwnerId = owner.Id,
+                Name = salonDTO.Name,
                 City = salonDTO.City,
                 PostCode = salonDTO.PostCode,
                 StreetName = salonDTO.StreetName,
@@ -96,6 +106,7 @@ namespace SalonAPI.Controllers
             }
 
             //Updating
+            dbSalon.Name = salonDTO.Name;
             dbSalon.City = salonDTO.City;
             dbSalon.PostCode = salonDTO.PostCode;
             dbSalon.StreetName = salonDTO.StreetName;

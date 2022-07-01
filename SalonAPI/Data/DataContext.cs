@@ -46,6 +46,8 @@ namespace SalonAPI.Data
 
         public DbSet<Text> Text { get; set; }
 
+        public DbSet<LogEntry> LogEntries { get; set; }
+
 
     }
 }
