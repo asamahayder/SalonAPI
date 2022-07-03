@@ -86,7 +86,7 @@ namespace SalonAPI.Controllers
         }
 
         [HttpPut("UpdateSalon"), Authorize(Roles = "Admin,Owner")]
-        public async Task<ActionResult<SalonDTO>> UpdateSalon(SalonDTO salonDTO)
+        public async Task<ActionResult<List<SalonDTO>>> UpdateSalon(SalonDTO salonDTO)
         {
             var dbSalon = await context.Salons.FindAsync(salonDTO.Id);
             if (dbSalon == null)

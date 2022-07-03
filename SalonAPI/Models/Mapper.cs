@@ -54,6 +54,7 @@ namespace SalonAPI.Models
             {
                 Id = booking.Id,
                 BookedById = booking.BookedById,
+                CustomerId = booking.CustomerId,
                 EmployeeId = booking.EmployeeId,
                 ServiceId = booking.ServiceId,
                 StartTime = booking.StartTime,

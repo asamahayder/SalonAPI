@@ -27,6 +27,7 @@ namespace SalonAPI.Controllers
         {
             var bookings = await context.Bookings
                 .Include(x => x.Employee)
+                .Include(x => x.Customer)
                 .Include(x => x.User)
                 .Include(x => x.Service)
                 .Where(x => x.EmployeeId == employeeId)
@@ -43,6 +44,7 @@ namespace SalonAPI.Controllers
 
             var bookings = await context.Bookings
                 .Include(x => x.Employee)
+                .Include(x => x.Customer)
                 .Include(x => x.User)
                 .Include(x => x.Service)
                 .Where(x => x.BookedById == currentUserId)
@@ -57,6 +59,7 @@ namespace SalonAPI.Controllers
         {
             var bookings = await context.Bookings
                 .Include(x => x.Employee)
+                .Include(x => x.Customer)
                 .Include(x => x.User)
                 .Include(x => x.Service)
                 .Where(x => x.BookedById == userId)
@@ -72,6 +75,7 @@ namespace SalonAPI.Controllers
         {
             var booking = await context.Bookings
                 .Include(x => x.Employee)
+                .Include(x => x.Customer)
                 .Include(x => x.User)
                 .Include(x => x.Service)
                 .Where(x => x.BookedById == Id)
@@ -106,6 +110,19 @@ namespace SalonAPI.Controllers
             var employee = await context.Employees.Where(x => x.Id == bookingDTO.EmployeeId).FirstOrDefaultAsync();
 
             if (employee == null) return NotFound("Employee could not be found");
+
+            Customer? customer;
+            if (bookingDTO.CustomerId != null)
+            {
+                //If a customer is specified, and we cant find it, then we return an error. 
+                //If a customer is not specified in the first place, then we just return null.
+                customer = await context.Customers.Where(x => x.Id == bookingDTO.CustomerId).FirstOrDefaultAsync();
+                if (customer == null) return NotFound("Customer could not be found");
+            }
+            else
+            {
+                customer = null;
+            }
 
 
             //Removing seconds and milliseconds from starttime and creating a new endtime in case the user has specified 
@@ -163,7 +180,7 @@ namespace SalonAPI.Controllers
 
             var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
-            SaveBooking(user, employee, bookingDTO, service, out var success, out var errorMessage);
+            SaveBooking(user, customer, employee, bookingDTO, service, out var success, out var errorMessage);
 
             if (success)
             {
@@ -210,6 +227,19 @@ namespace SalonAPI.Controllers
             var employee = await context.Employees.Where(x => x.Id == bookingDTO.EmployeeId).FirstOrDefaultAsync();
 
             if (employee == null) return NotFound("Employee could not be found");
+
+
+            Customer? customer;
+            if(bookingDTO.CustomerId != null)
+            {
+                customer = await context.Customers.Where(x => x.Id == bookingDTO.CustomerId).FirstOrDefaultAsync();
+            }
+            else
+            {
+                customer = null;
+            }
+            
+
 
 
             //Removing seconds and milliseconds from starttime and creating a new endtime in case the user has specified 
@@ -271,7 +301,7 @@ namespace SalonAPI.Controllers
 
             context.SaveChanges();
 
-            SaveBooking(user, employee, bookingDTO, service, out var success, out var errorMessage);
+            SaveBooking(user, customer, employee, bookingDTO, service, out var success, out var errorMessage);
 
             if (success)
             {
@@ -306,6 +336,7 @@ namespace SalonAPI.Controllers
 
             var dbBooking = await context.Bookings
                 .Include(x => x.Employee)
+                .Include(x => x.Customer)
                 .Include(x => x.Service)
                 .Include(x => x.User)
                 .Where(x => x.Id == id).FirstOrDefaultAsync();
@@ -326,7 +357,7 @@ namespace SalonAPI.Controllers
         }
 
 
-        private void SaveBooking(User user, Employee employee, BookingDTO bookingDTO, Service service, out bool success, out string? errorMessage)
+        private void SaveBooking(User user, Customer? customer, Employee employee, BookingDTO bookingDTO, Service service, out bool success, out string? errorMessage)
         {
             success = false;
             errorMessage = null;
@@ -336,6 +367,7 @@ namespace SalonAPI.Controllers
             {
                 var dbBookings = context.Bookings
                 .Include(x => x.Employee)
+                .Include(x => x.Customer)
                 .Include(x => x.User)
                 .Include(x => x.Service)
                 .Where(x => x.EmployeeId == bookingDTO.EmployeeId)
@@ -354,6 +386,7 @@ namespace SalonAPI.Controllers
                     {
                         BookedById = user.Id,
                         EmployeeId = bookingDTO.EmployeeId,
+                        CustomerId = bookingDTO.CustomerId,
                         ServiceId = bookingDTO.ServiceId,
                         StartTime = bookingDTO.StartTime,
                         EndTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.PauseStartInMinutes)),
@@ -364,6 +397,7 @@ namespace SalonAPI.Controllers
                     {
                         BookedById = user.Id,
                         EmployeeId = bookingDTO.EmployeeId,
+                        CustomerId = bookingDTO.CustomerId,
                         ServiceId = bookingDTO.ServiceId,
                         StartTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.PauseEndInMinutes)),
                         EndTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.DurationInMinutes)),
@@ -378,6 +412,8 @@ namespace SalonAPI.Controllers
                     {
                         BookedById = user.Id,
                         User = user,
+                        CustomerId = bookingDTO.CustomerId,
+                        Customer = customer,
                         EmployeeId = bookingDTO.EmployeeId,
                         Employee = employee,
                         ServiceId = bookingDTO.ServiceId,
@@ -391,6 +427,8 @@ namespace SalonAPI.Controllers
                     {
                         BookedById = user.Id,
                         User = user,
+                        CustomerId = bookingDTO.CustomerId,
+                        Customer = customer,
                         EmployeeId = bookingDTO.EmployeeId,
                         Employee = employee,
                         ServiceId = bookingDTO.ServiceId,
@@ -413,6 +451,8 @@ namespace SalonAPI.Controllers
                     {
                         BookedById = user.Id,
                         User = user,
+                        CustomerId = bookingDTO.CustomerId,
+                        Customer = customer,
                         EmployeeId = bookingDTO.EmployeeId,
                         Employee = employee,
                         ServiceId = bookingDTO.ServiceId,

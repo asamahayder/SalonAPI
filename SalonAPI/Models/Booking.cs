@@ -13,7 +13,14 @@ namespace SalonAPI.Models
         public int BookedById { get; set; }
 
         public User User { get; set; }
-        
+
+
+        [Required]
+        [ForeignKey("Customer")]
+        public int? CustomerId { get; set; }
+
+        public Customer? Customer { get; set; }
+
 
         [Required]
         [ForeignKey("Employee")]

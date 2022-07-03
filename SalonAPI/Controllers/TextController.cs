@@ -42,7 +42,7 @@ namespace SalonAPI.Controllers
 
         [HttpPost("CreateText")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<TextDTO>> CreateText(TextDTO textDTO)
+        public async Task<ActionResult<List<TextDTO>>> CreateText(TextDTO textDTO)
         {
             var dbText = await context.Text.FirstOrDefaultAsync(x => x.Key == textDTO.Key);
 
@@ -58,12 +58,14 @@ namespace SalonAPI.Controllers
             context.Text.Add(newText);
             await context.SaveChangesAsync();
 
-            return Ok(Mapper.MapToDTO(newText));
+            var allText = await context.Text.Select(x => Mapper.MapToDTO(x)).ToListAsync();
+
+            return Ok(allText);
         }
 
         [HttpPut("UpdateText")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<TextDTO>> UpdateText(TextDTO textDTO)
+        public async Task<ActionResult<List<TextDTO>>> UpdateText(TextDTO textDTO)
         {
             var dbText = await context.Text.FirstOrDefaultAsync(x => x.Key == textDTO.Key);
 
@@ -74,12 +76,14 @@ namespace SalonAPI.Controllers
 
             await context.SaveChangesAsync();
 
-            return Ok(Mapper.MapToDTO(dbText));
+            var allText = await context.Text.Select(x => Mapper.MapToDTO(x)).ToListAsync();
+
+            return Ok(allText);
         }
 
         [HttpDelete("DeleteText")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<TextDTO>> DeleteText(string key)
+        public async Task<ActionResult<List<TextDTO>>> DeleteText(string key)
         {
             var dbText = await context.Text.FirstOrDefaultAsync(x => x.Key == key);
 
@@ -88,7 +92,9 @@ namespace SalonAPI.Controllers
             context.Text.Remove(dbText);
             await context.SaveChangesAsync();
 
-            return Ok(Mapper.MapToDTO(dbText));
+            var allText = await context.Text.Select(x => Mapper.MapToDTO(x)).ToListAsync();
+
+            return Ok(allText);
         }
 
 

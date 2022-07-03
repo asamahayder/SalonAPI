@@ -98,7 +98,7 @@ namespace SalonAPI.Controllers
 
 
         [HttpPut("UpdateService"), Authorize(Roles = "Admin,Owner")]
-        public async Task<ActionResult<ServiceDTO>> UpdateService(ServiceDTO serviceDTO)
+        public async Task<ActionResult<List<ServiceDTO>>> UpdateService(ServiceDTO serviceDTO)
         {
             var dbService = await context.Services.Include(x => x.Employees).FirstOrDefaultAsync(x => x.Id == serviceDTO.Id);
             if (dbService == null)

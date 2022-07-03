@@ -11,6 +11,9 @@ namespace SalonAPI.Models.DTOs
         [Required]
         public int BookedById { get; set; }
 
+        [Required]
+        public int? CustomerId { get; set; }
+
 
         [Required]
         public int EmployeeId { get; set; }
