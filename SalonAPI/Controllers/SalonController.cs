@@ -63,6 +63,11 @@ namespace SalonAPI.Controllers
             var ownerEmail = identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
             var owner = await context.Owners.AsNoTracking().FirstOrDefaultAsync(x => x.Email == ownerEmail);
 
+            var employees = await context.Employees
+                .Where(x => x.Role == Roles.Employee && salonDTO.EmployeesIds.Contains(x.Id))
+                .ToListAsync();
+
+
             var salon = new Salon()
             {
                 OwnerId = owner.Id,
@@ -74,7 +79,8 @@ namespace SalonAPI.Controllers
                 Suit = salonDTO.Suit,
                 Door = salonDTO.Door,
                 Phone = salonDTO.Phone,
-                Email = salonDTO.Email
+                Email = salonDTO.Email,
+                Employees = employees
             };
 
             context.Salons.Add(salon);
@@ -88,7 +94,7 @@ namespace SalonAPI.Controllers
         [HttpPut("UpdateSalon"), Authorize(Roles = "Admin,Owner")]
         public async Task<ActionResult<List<SalonDTO>>> UpdateSalon(SalonDTO salonDTO)
         {
-            var dbSalon = await context.Salons.FindAsync(salonDTO.Id);
+            var dbSalon = await context.Salons.Include(x => x.Employees).FirstOrDefaultAsync(x => x.Id == salonDTO.Id);
             if (dbSalon == null)
             {
                 return BadRequest("Salon not found");
@@ -100,7 +106,10 @@ namespace SalonAPI.Controllers
             var ownerEmail = identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
             var owner = await context.Owners.AsNoTracking().FirstOrDefaultAsync(x => x.Email == ownerEmail);
 
-            if(dbSalon.OwnerId != owner.Id)
+            
+
+
+            if (dbSalon.OwnerId != owner.Id)
             {
                 return Unauthorized("Authorized user does not have permission to edit this salon.");
             }
@@ -115,6 +124,9 @@ namespace SalonAPI.Controllers
             dbSalon.Door = salonDTO.Door;
             dbSalon.Phone = salonDTO.Phone;
             dbSalon.Email = salonDTO.Email;
+
+
+            dbSalon.Employees.RemoveAll(x => !salonDTO.EmployeesIds.Contains(x.Id));
 
             await context.SaveChangesAsync();
 

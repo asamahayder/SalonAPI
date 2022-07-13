@@ -35,5 +35,8 @@ namespace SalonAPI.Models.DTOs
 
         [EmailAddress]
         public string? Email { get; set; } = string.Empty;
+
+        [Required]
+        public ICollection<int> EmployeesIds { get; set; } = new List<int>();
     }
 }

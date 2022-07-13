@@ -6,11 +6,11 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Filters;
 using System.Text.Json.Serialization;
+using SalonAPI.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddDbContext<DataContext>(options =>
     {
@@ -51,6 +51,8 @@ builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.Re
 
 
 var app = builder.Build();
+
+app.UseCustomMiddleware();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

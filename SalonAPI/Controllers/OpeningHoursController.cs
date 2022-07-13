@@ -27,10 +27,13 @@ namespace SalonAPI.Controllers
             var employee = await context.Employees.FirstOrDefaultAsync(x => x.Id == employeeID);
             if (employee == null) return NotFound("Could not find employee");
 
-            var specialOpeningHours = await context.SpecialOpeningHours
-                .FirstOrDefaultAsync(x => x.EmployeeId == employeeID && x.Week.Year == week.Year && ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(week));
-
             
+            var specialOpeningHoursList = await context.SpecialOpeningHours
+                .Where(x => x.EmployeeId == employee.Id && x.Week.Year == week.Year).ToListAsync();
+            var specialOpeningHours = specialOpeningHoursList
+                .Where(x => ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(week)).FirstOrDefault();
+
+
             if (specialOpeningHours == null)
             {
                 var openingHours = await context.OpeningHours.FirstOrDefaultAsync(x => x.EmployeeId == employeeID);
@@ -58,8 +61,11 @@ namespace SalonAPI.Controllers
             var employee = await context.Employees.FirstOrDefaultAsync(x => x.Id == employeeID);
             if (employee == null) return NotFound("Could not find employee");
 
-            var specialOpeningHours = await context.SpecialOpeningHours.
-                FirstOrDefaultAsync(x => x.EmployeeId == employeeID && x.Week.Year == week.Year && ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(week));
+            
+            var specialOpeningHoursList = await context.SpecialOpeningHours
+                .Where(x => x.EmployeeId == employee.Id && x.Week.Year == week.Year).ToListAsync();
+            var specialOpeningHours = specialOpeningHoursList
+                .Where(x => ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(week)).FirstOrDefault();
 
             if (specialOpeningHours == null) return NotFound("No special hours for this week");
 
@@ -82,10 +88,12 @@ namespace SalonAPI.Controllers
 
             //check if already existing opening hours for given week
 
-            var existingSpecialOpeningHours = await context.SpecialOpeningHours
-                .FirstOrDefaultAsync(x => x.EmployeeId == currentEmployeeId 
-                && x.Week.Year == specialOpeningHoursDTO.Week.Year 
-                && ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(specialOpeningHoursDTO.Week));
+           
+
+            var specialOpeningHoursList = await context.SpecialOpeningHours
+                .Where(x => x.EmployeeId == currentEmployeeId && x.Week.Year == specialOpeningHoursDTO.Week.Year).ToListAsync();
+            var existingSpecialOpeningHours = specialOpeningHoursList
+                .Where(x => ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(specialOpeningHoursDTO.Week)).FirstOrDefault();
 
             if (existingSpecialOpeningHours != null) BadRequest("There already exists a specialOpeningHours for this week.");
 
@@ -140,10 +148,11 @@ namespace SalonAPI.Controllers
 
             if (specialOpeningHoursDTO.EmployeeId != currentEmployeeId) return Unauthorized("Can't edit another employee's opening hours.");
 
-            var dbSpecialOpeningHours = await context.SpecialOpeningHours
-                .FirstOrDefaultAsync(x => x.EmployeeId == specialOpeningHoursDTO.EmployeeId 
-                && x.Week.Year == specialOpeningHoursDTO.Week.Year 
-                && ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(specialOpeningHoursDTO.Week));
+            var specialOpeningHoursList = await context.SpecialOpeningHours
+                .Where(x => x.EmployeeId == specialOpeningHoursDTO.EmployeeId && x.Week.Year == specialOpeningHoursDTO.Week.Year).ToListAsync();
+            var dbSpecialOpeningHours = specialOpeningHoursList
+                .Where(x => ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(specialOpeningHoursDTO.Week)).FirstOrDefault();
+
 
             if (dbSpecialOpeningHours == null) return NotFound("Can't find specialOpeningHours for this week");
 
@@ -226,10 +235,12 @@ namespace SalonAPI.Controllers
             if (identity == null) return Unauthorized("Identity is null");
             var currentEmployeeId = Int32.Parse(identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value.ToString());
 
-            var dbSpecialOpeningHours = await context.SpecialOpeningHours
-                .FirstOrDefaultAsync(x => x.EmployeeId == currentEmployeeId 
-                && x.Week.Year == week.Year 
-                && ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(week));
+
+            var specialOpeningHoursList = await context.SpecialOpeningHours
+                .Where(x => x.EmployeeId == currentEmployeeId && x.Week.Year == week.Year).ToListAsync();
+            var dbSpecialOpeningHours = specialOpeningHoursList
+                .Where(x => ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(week)).FirstOrDefault();
+
 
             if (dbSpecialOpeningHours == null) return NotFound("Can't find specialOpeningHours for this week");
 

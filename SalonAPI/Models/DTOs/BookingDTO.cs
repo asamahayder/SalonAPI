@@ -11,7 +11,7 @@ namespace SalonAPI.Models.DTOs
         [Required]
         public int BookedById { get; set; }
 
-        [Required]
+        
         public int? CustomerId { get; set; }
 
 
@@ -33,6 +33,8 @@ namespace SalonAPI.Models.DTOs
 
         [MaxLength(300)]
         public string? Note { get; set; }
+
+        public string? PairId { get; set; }
 
     }
 }

@@ -70,23 +70,44 @@ namespace SalonAPI.Controllers
 
 
         [HttpGet("id")]
-        [Authorize(Roles="Admin")]
         public async Task<ActionResult<BookingDTO>> Get(int Id)
         {
+            //Getting user identity
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null) return Unauthorized("Identity is null");
+            var userEmail = identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value.ToString();
+            var currentUserIdString = identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value.ToString();
+            var currentUserId = Int32.Parse(currentUserIdString);
+            var user = await context.Users.FirstOrDefaultAsync(x => x.Email == userEmail);
+
             var booking = await context.Bookings
                 .Include(x => x.Employee)
                 .Include(x => x.Customer)
                 .Include(x => x.User)
                 .Include(x => x.Service)
-                .Where(x => x.BookedById == Id)
-                .Select(x => Mapper.MapToDTO(x)).FirstOrDefaultAsync();
+                .Where(x => x.Id == Id)
+                .FirstOrDefaultAsync();
 
             if (booking == null)
             {
                 return BadRequest("Booking not found");
             }
 
-            return Ok(booking);
+            if (user.Role == Roles.Customer && booking.BookedById != currentUserId) return Unauthorized();
+
+            var salon = await context.Salons.Where(x => x.Id == booking.Service.SalonId).FirstOrDefaultAsync();
+
+            if(user.Role == Roles.Owner && salon.OwnerId != user.Id)
+            {
+                return Unauthorized("Not allowed to get this booking");
+            }
+
+            if (user.Role == Roles.Employee && booking.EmployeeId!= user.Id)
+            {
+                return Unauthorized("Not allowed to get this booking");
+            }
+
+            return Ok(Mapper.MapToDTO(booking));
         }
 
 
@@ -142,10 +163,11 @@ namespace SalonAPI.Controllers
 
             var weekday = bookingDTO.StartTime.DayOfWeek;
 
-            var specialOpeningHours = await context.SpecialOpeningHours
-                .FirstOrDefaultAsync(x => x.EmployeeId == employee.Id 
-                && x.Week.Year == bookingDTO.StartTime.Year 
-                && ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(bookingDTO.StartTime));
+
+            var specialOpeningHoursList = await context.SpecialOpeningHours
+                .Where(x => x.EmployeeId == employee.Id && x.Week.Year == bookingDTO.StartTime.Year).ToListAsync();
+            var specialOpeningHours = specialOpeningHoursList
+                .Where(x => ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(bookingDTO.StartTime)).FirstOrDefault();
 
             if (specialOpeningHours == null)
             {
@@ -168,11 +190,11 @@ namespace SalonAPI.Controllers
 
             if (!isOpenForDay) return BadRequest("Employee not working this day");
 
-            if (bookingDTO.StartTime.CompareTo(startTimeForDay) < 0 || bookingDTO.EndTime.CompareTo(startTimeForDay) <= 0) 
-               return BadRequest("Booking start/end time cant be outside the start of the day");
+            if (bookingDTO.StartTime.TimeOfDay.CompareTo(startTimeForDay.Value.TimeOfDay) < 0 || bookingDTO.EndTime.TimeOfDay.CompareTo(startTimeForDay.Value.TimeOfDay) <= 0) 
+               return BadRequest("Booking start/end time cant be before the start of the day");
 
-            if (bookingDTO.StartTime.CompareTo(endTimeForDay) >= 0 || bookingDTO.EndTime.CompareTo(endTimeForDay) > 0)
-                return BadRequest("Booking start/end time cant be outside the end of the day");
+            if (bookingDTO.StartTime.TimeOfDay.CompareTo(endTimeForDay.Value.TimeOfDay) >= 0 || bookingDTO.EndTime.TimeOfDay.CompareTo(endTimeForDay.Value.TimeOfDay) > 0)
+                return BadRequest("Booking start/end time cant be after the end of the day");
 
             IsValid(bookingDTO.StartTime, employee.Id, service, out bool isValid, out string? error);
 
@@ -258,10 +280,10 @@ namespace SalonAPI.Controllers
             var weekday = bookingDTO.StartTime.DayOfWeek;
             
             //We have to check both week and year, as bookings from different years can have the same week number.
-            var specialOpeningHours = await context.SpecialOpeningHours
-                .FirstOrDefaultAsync(x => x.EmployeeId == employee.Id 
-                && x.Week.Year == bookingDTO.StartTime.Year 
-                && ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(bookingDTO.StartTime));
+            var specialOpeningHoursList = await context.SpecialOpeningHours
+                .Where(x => x.EmployeeId == employee.Id && x.Week.Year == bookingDTO.StartTime.Year).ToListAsync();
+            var specialOpeningHours = specialOpeningHoursList
+                .Where(x => ISOWeek.GetWeekOfYear(x.Week) == ISOWeek.GetWeekOfYear(bookingDTO.StartTime)).FirstOrDefault();
 
             if (specialOpeningHours == null)
             {
@@ -283,11 +305,12 @@ namespace SalonAPI.Controllers
 
             if (!isOpenForDay) return BadRequest("Employee not working this day");
 
-            if (bookingDTO.StartTime.CompareTo(startTimeForDay) < 0 || bookingDTO.EndTime.CompareTo(startTimeForDay) <= 0)
-                return BadRequest("Booking start/end time cant be outside the start of the day");
 
-            if (bookingDTO.StartTime.CompareTo(endTimeForDay) >= 0 || bookingDTO.EndTime.CompareTo(endTimeForDay) > 0)
-                return BadRequest("Booking start/end time cant be outside the end of the day");
+            if (bookingDTO.StartTime.TimeOfDay.CompareTo(startTimeForDay.Value.TimeOfDay) < 0 || bookingDTO.EndTime.TimeOfDay.CompareTo(startTimeForDay.Value.TimeOfDay) <= 0)
+                return BadRequest("Booking start/end time cant be before the start of the day");
+
+            if (bookingDTO.StartTime.TimeOfDay.CompareTo(endTimeForDay.Value.TimeOfDay) >= 0 || bookingDTO.EndTime.TimeOfDay.CompareTo(endTimeForDay.Value.TimeOfDay) > 0)
+                return BadRequest("Booking start/end time cant be after the end of the day");
 
             IsValid(bookingDTO.StartTime, employee.Id, service, out bool isValid, out string? error);
 
@@ -298,6 +321,19 @@ namespace SalonAPI.Controllers
             var transaction = await context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
 
             context.Bookings.Remove(dbBooking);
+
+            //Checking if this booking is a part of a pair due to pause
+            if (dbBooking.PairId != null)
+            {
+                var pairBooking = await context.Bookings
+                .Include(x => x.Employee)
+                .Include(x => x.Customer)
+                .Include(x => x.Service)
+                .Include(x => x.User)
+                .Where(x => x.PairId == dbBooking.PairId && x.Id != dbBooking.Id).FirstOrDefaultAsync();
+
+                context.Bookings.Remove(pairBooking);
+            }
 
             context.SaveChanges();
 
@@ -343,11 +379,24 @@ namespace SalonAPI.Controllers
 
             if (dbBooking == null) return NotFound("Could not find booking");
 
-
             if (!CheckPermission(currentUser, dbBooking)) return Unauthorized("No permission to edit this booking");
 
 
             context.Bookings.Remove(dbBooking);
+
+            //Checking if this booking is a part of a pair due to pause
+            if(dbBooking.PairId != null)
+            {
+                var pairBooking = await context.Bookings
+                .Include(x => x.Employee)
+                .Include(x => x.Customer)
+                .Include(x => x.Service)
+                .Include(x => x.User)
+                .Where(x => x.PairId == dbBooking.PairId && x.Id != dbBooking.Id).FirstOrDefaultAsync();
+
+                context.Bookings.Remove(pairBooking);
+            }
+
             await context.SaveChangesAsync();
 
             var bookingsDTO = await context.Bookings.Where(x => x.BookedById == currentUserId)
@@ -382,6 +431,8 @@ namespace SalonAPI.Controllers
                     //This way it is possible to create another booking in the pause time of the service
                     //and we can use the same logic to detect overlapp with other services.
 
+                    var uniquePairId = Guid.NewGuid().ToString();
+
                     var bookingDTOBeforePause = new BookingDTO()
                     {
                         BookedById = user.Id,
@@ -390,7 +441,8 @@ namespace SalonAPI.Controllers
                         ServiceId = bookingDTO.ServiceId,
                         StartTime = bookingDTO.StartTime,
                         EndTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.PauseStartInMinutes)),
-                        Note = bookingDTO.Note
+                        Note = bookingDTO.Note,
+                        PairId = uniquePairId
                     };
 
                     var bookingDTOAfterPause = new BookingDTO()
@@ -401,7 +453,8 @@ namespace SalonAPI.Controllers
                         ServiceId = bookingDTO.ServiceId,
                         StartTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.PauseEndInMinutes)),
                         EndTime = bookingDTO.StartTime.AddMinutes(Convert.ToDouble(service.DurationInMinutes)),
-                        Note = bookingDTO.Note
+                        Note = bookingDTO.Note,
+                        PairId = uniquePairId
                     };
 
                     IsOverlapping(bookingDTOBeforePause.StartTime, bookingDTOBeforePause.EndTime, dbBookings, out isOverlapping);
@@ -420,7 +473,8 @@ namespace SalonAPI.Controllers
                         Service = service,
                         StartTime = bookingDTOBeforePause.StartTime,
                         EndTime = bookingDTOBeforePause.EndTime,
-                        Note = bookingDTOBeforePause.Note
+                        Note = bookingDTOBeforePause.Note,
+                        PairId = bookingDTOBeforePause.PairId
                     };
 
                     var bookingAfterPause = new Booking()
@@ -435,7 +489,8 @@ namespace SalonAPI.Controllers
                         Service = service,
                         StartTime = bookingDTOAfterPause.StartTime,
                         EndTime = bookingDTOAfterPause.EndTime,
-                        Note = bookingDTOAfterPause.Note
+                        Note = bookingDTOAfterPause.Note,
+                        PairId = bookingDTOAfterPause.PairId
                     };
 
 
@@ -514,7 +569,10 @@ namespace SalonAPI.Controllers
             var serviceHasEmployee = false;
             foreach (var serviceEmployee in service.Employees)
             {
-                if (serviceEmployee.Id == employeeId) serviceHasEmployee = true; break;
+                if (serviceEmployee.Id == employeeId) { 
+                    serviceHasEmployee = true; 
+                }
+                
             }
 
             if (!serviceHasEmployee) { isValid = false; error = "Service does not have employee"; return; }
@@ -522,7 +580,8 @@ namespace SalonAPI.Controllers
 
 
             //Checking if date is not in the past
-            if (DateTime.Compare(startTime, DateTime.Now) < 0) { isValid = false; error = "Datetime cannot be in the past"; return; }
+            //removing 5 min from Date.Now so that it is not as sensitive. 
+            if (DateTime.Compare(startTime, DateTime.Now.Add(new TimeSpan(0,-5,0))) < 0) { isValid = false; error = "Datetime cannot be in the past"; return; }
            
         }
 

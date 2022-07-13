@@ -12,8 +12,8 @@ using SalonAPI.Data;
 namespace SalonAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220629134535_salon_name")]
-    partial class salon_name
+    [Migration("20220713125743_initialcreate")]
+    partial class initialcreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -50,6 +50,9 @@ namespace SalonAPI.Migrations
                     b.Property<int>("BookedById")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CustomerId")
+                        .HasColumnType("int");
+
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
@@ -60,6 +63,9 @@ namespace SalonAPI.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
+                    b.Property<string>("PairId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
@@ -69,6 +75,8 @@ namespace SalonAPI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BookedById");
+
+                    b.HasIndex("CustomerId");
 
                     b.HasIndex("EmployeeId");
 
@@ -516,6 +524,10 @@ namespace SalonAPI.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("SalonAPI.Models.Customer", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId");
+
                     b.HasOne("SalonAPI.Models.Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
@@ -527,6 +539,8 @@ namespace SalonAPI.Migrations
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Customer");
 
                     b.Navigation("Employee");
 

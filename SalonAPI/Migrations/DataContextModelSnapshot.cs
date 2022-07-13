@@ -49,7 +49,6 @@ namespace SalonAPI.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("CustomerId")
-                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<int>("EmployeeId")
@@ -61,6 +60,9 @@ namespace SalonAPI.Migrations
                     b.Property<string>("Note")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("PairId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
@@ -522,9 +524,7 @@ namespace SalonAPI.Migrations
 
                     b.HasOne("SalonAPI.Models.Customer", "Customer")
                         .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CustomerId");
 
                     b.HasOne("SalonAPI.Models.Employee", "Employee")
                         .WithMany()

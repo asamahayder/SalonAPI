@@ -15,7 +15,7 @@ namespace SalonAPI.Models
         public User User { get; set; }
 
 
-        [Required]
+      
         [ForeignKey("Customer")]
         public int? CustomerId { get; set; }
 
@@ -41,6 +41,8 @@ namespace SalonAPI.Models
         [Required]
         [DataType(DataType.DateTime)]
         public DateTime EndTime { get; set; }
+
+        public string? PairId { get; set; } = null;
 
         [MaxLength(300)]
         public string? Note { get; set; }

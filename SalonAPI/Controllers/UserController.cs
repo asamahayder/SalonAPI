@@ -35,10 +35,26 @@ namespace SalonAPI.Controllers
             return Ok(Mapper.MapToDTO(currentUser));
         }
 
-        [HttpGet("GetUserById"), Authorize(Roles = "Admin")]
+        [HttpGet("GetEmployee")]
+        public async Task<ActionResult<EmployeeDTO>> GetEmployee(int employeeId)
+        {
+            var employee = await context.Employees.Include(x => x.Salon).FirstOrDefaultAsync(x => x.Id == employeeId);
+
+            if (employee == null) return NotFound("Employee not found");
+
+            return Ok(Mapper.MapToDTO(employee));
+        }
+
+        [HttpGet("GetUserById")]
         public async Task<ActionResult<UserDTO>> GetUserById(int id)
         {
             
+
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity == null) return Unauthorized("Identity is null");
+            var currentUserId = Int32.Parse(identity.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier).Value.ToString());
+            var currentUser = await context.Users.FirstOrDefaultAsync(x => x.Id == currentUserId);
+
             var user = await context.Users.FirstOrDefaultAsync(x => x.Id == id);
 
             if (user == null) return NotFound("User not found");
@@ -121,7 +137,11 @@ namespace SalonAPI.Controllers
 
             context.Users.Remove(user);
 
+           
             await context.SaveChangesAsync();
+
+
+            
 
             return Ok(Mapper.MapToDTO(user));
         }

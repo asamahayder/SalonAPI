@@ -43,6 +43,7 @@ namespace SalonAPI.Models
                 Door = salon.Door,
                 Phone = salon.Phone,
                 Email = salon.Email,
+                EmployeesIds = salon.Employees.Select(x => x.Id).ToList()
             };
 
             return salonDTO;
@@ -59,7 +60,8 @@ namespace SalonAPI.Models
                 ServiceId = booking.ServiceId,
                 StartTime = booking.StartTime,
                 EndTime = booking.EndTime,
-                Note = booking.Note
+                Note = booking.Note,
+                PairId = booking.PairId
             };
 
             return bookingDTO;
@@ -186,6 +188,22 @@ namespace SalonAPI.Models
             };
 
             return userDTO;
+        }
+
+        public static EmployeeDTO MapToDTO(Employee employee)
+        {
+            var employeeDTO = new EmployeeDTO()
+            {
+                Id = employee.Id,
+                SalonId = employee.Salon?.Id,
+                Email = employee.Email,
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
+                Phone = employee.Phone,
+                Role = employee.Role.GetString()
+            };
+
+            return employeeDTO;
         }
 
         public static TextDTO MapToDTO(Text text)
